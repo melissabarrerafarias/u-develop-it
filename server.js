@@ -2,10 +2,11 @@ const sqlite3 = require('sqlite3').verbose();
 const express = require('express');
 const PORT = process.env.PORT || 3001;
 const app = express();
+const inputCheck = require('./utils/inputCheck');
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 // connect to database
-const db  = new sqlite3.Database('./db/election.db', err => {
+const db = new sqlite3.Database('./db/election.db', err => {
     if (err) {
         return console.error(err.message);
     }
@@ -16,7 +17,7 @@ const db  = new sqlite3.Database('./db/election.db', err => {
 
 app.get('/', (req, res) => {
     res.json({
-        message:'Hello World'
+        message: 'Hello World'
     });
 })
 
@@ -25,17 +26,17 @@ app.get('/api/candidates', (req, res) => {
     const sql = `SELECT * FROM candidates`;
     const params = [];
     db.all(sql, params, (err, rows) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-  
-      res.json({
-        message: 'success',
-        data: rows
-      });
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+
+        res.json({
+            message: 'success',
+            data: rows
+        });
     });
-  });
+});
 
 // request candidate by id
 app.get('/api/candidate/:id', (req, res) => {
@@ -43,45 +44,70 @@ app.get('/api/candidate/:id', (req, res) => {
                  WHERE id = ?`;
     const params = [req.params.id];
     db.get(sql, params, (err, row) => {
-      if (err) {
-        res.status(400).json({ error: err.message });
-        return;
-      }
-  
-      res.json({
-        message: 'success',
-        data: row
-      });
+        if (err) {
+            res.status(400).json({ error: err.message });
+            return;
+        }
+
+        res.json({
+            message: 'success',
+            data: row
+        });
     });
-  });
+});
 
 // delete a candidate
 app.delete('/api/candidate/:id', (req, res) => {
     const sql = `DELETE FROM candidates WHERE id = ?`;
     const params = [req.params.id];
-    db.run(sql, params, function(err, result) {
-      if (err) {
-        res.status(400).json({ error: res.message });
-        return;
-      }
-  
-      res.json({
-        message: 'successfully deleted',
-        changes: this.changes
-      });
+    db.run(sql, params, function (err, result) {
+        if (err) {
+            res.status(400).json({ error: res.message });
+            return;
+        }
+
+        res.json({
+            message: 'successfully deleted',
+            changes: this.changes
+        });
     });
-  });
+});
 
 // create a candidate
-const sql = `INSERT INTO candidates (id, first_name, last_name, industry_connected)
-             VALUES (?, ?, ?, ?)`;
-const params = [1, 'Ronald', 'Firbank', 1];
-db.run(sql, params, function(err, result) {
-    if (err) {
-      console.log(err);
+app.post('/api/candidate', ({ body }, res) => {
+    const errors = inputCheck(body, 'first_name', 'last_name', 'industry_connected');
+    if (errors) {
+        res.status(400).json({ error: errors });
+        return;
     }
-    console.log(result, this.lastID);
-  });
+    const sql = `INSERT INTO candidates (first_name, last_name, industry_connected) 
+              VALUES (?,?,?)`;
+    const params = [body.first_name, body.last_name, body.industry_connected];
+    // ES5 function, not arrow function, to use `this`
+    db.run(sql, params, function (err, result) {
+        if (err) {
+            res.status(400).json({ error: err.message });
+            return;
+        }
+
+        res.json({
+            message: 'success',
+            data: body,
+            id: this.lastID
+        }); 
+    });
+});
+
+// create a candidate
+// const sql = `INSERT INTO candidates (id, first_name, last_name, industry_connected)
+//              VALUES (?, ?, ?, ?)`;
+// const params = [1, 'Ronald', 'Firbank', 1];
+// db.run(sql, params, function(err, result) {
+//     if (err) {
+//       console.log(err);
+//     }
+//     console.log(result, this.lastID);
+//   });
 
 
 // default response for any other request(Not Found) Catch all (make sure this is the last route above the listener or else it will override all others)

@@ -6,13 +6,12 @@ const app = express();
 
 const apiRoutes = require('./routes/apiRoutes');
 
-app.use('/api', apiRoutes); // './api' lets us remove it from the individual route expressions after we move them to their new home
-
 // express middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use('/api', apiRoutes); // './api' lets us remove it from the individual route expressions after we move them to their new home
 
-// use apiRoutes
+
 app.get('/', (req, res) => {
   res.json({
     message: 'Hello World'

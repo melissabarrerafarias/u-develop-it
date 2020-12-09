@@ -1,18 +1,10 @@
-const sqlite3 = require('sqlite3').verbose();
 const express = require('express');
 const PORT = process.env.PORT || 3001;
 const app = express();
 const inputCheck = require('./utils/inputCheck');
+const db = require('./db/database');
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-// connect to database
-const db = new sqlite3.Database('./db/election.db', err => {
-    if (err) {
-        return console.error(err.message);
-    }
-
-    console.log('Conneced to the election database');
-})
 
 
 app.get('/', (req, res) => {

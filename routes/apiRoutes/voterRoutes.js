@@ -3,6 +3,9 @@ const router = express.Router();
 const db = require('../../db/database');
 const inputCheck = require('../../utils/inputCheck');
 
+router.use(express.urlencoded({ extended: false }));
+router.use(express.json());
+
 router.get('/voters', (req, res) => {
     const sql = `SELECT * FROM voters ORDER BY last_name`;
     const params = [];

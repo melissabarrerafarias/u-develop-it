@@ -3,6 +3,9 @@ const router = express.Router();
 const db = require('../../db/database');
 const inputCheck = require('../../utils/inputCheck');
 
+router.use(express.urlencoded({ extended: false }));
+router.use(express.json());
+
 // Get all candidates
 router.get('/candidates', (req, res) => {
     const sql = `SELECT candidates.*, parties.name 
@@ -17,7 +20,7 @@ router.get('/candidates', (req, res) => {
             return;
         }
 
-        res.json({
+        res.json({ 
             message: 'success',
             data: rows
         });

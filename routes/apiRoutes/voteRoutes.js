@@ -12,7 +12,7 @@ router.get('/votes', (req, res) => {
                 GROUP BY candidate_id ORDER BY count DESC;`;
     const params = [];
 
-    db.all(sql, params, (err, rows) => { 
+    db.all(sql, params, (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
